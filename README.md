@@ -81,7 +81,9 @@ Default bootstrap account: `owner@stickandslay.app` (**change this email** befor
 ## Deployment (Vercel)
 
 Env vars needed in Vercel: `DATABASE_URL`, `ADMIN_SESSION_SECRET` (all environments).
-Deploy from the linked GitHub repo (auto-deploys on push) or `npx vercel --prod`.
+Production deploys run via CLI (same as zomato-lite): `npx vercel deploy --prod --yes`.
+To enable push-to-deploy from GitHub, install the Vercel GitHub App and run
+`npx vercel git connect https://github.com/<owner>/<repo>` once in the dashboard.
 
 ## Tests
 

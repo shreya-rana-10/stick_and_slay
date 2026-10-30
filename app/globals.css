@@ -1,26 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0b;
+  --foreground: #f4f4f5;
 }
 
+/* Brand fonts loaded via next/font (Anton display, Space Grotesk body) */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-anton);
+  --font-body: var(--font-space-grotesk);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Brand palette tokens -> utilities like bg-ink, text-mist, bg-slay */
+@theme {
+  --color-ink: #0a0a0b;
+  --color-panel: #141417;
+  --color-panel2: #1c1c21;
+  --color-line: #26262c;
+  --color-mist: #a1a1aa;
+  --color-pure: #f4f4f5;
+  --color-slay: #d9ff45;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Visible keyboard focus everywhere (accessibility) */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--color-slay);
+  outline-offset: 2px;
 }

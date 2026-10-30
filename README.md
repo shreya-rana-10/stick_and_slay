@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stick & Slay
 
-## Getting Started
+A product website for magnetic earrings — "The ear-piercing look. No piercing needed."
+Built per the Stick & Slay PRD v1.0: a website that collects **order requests**
+(no cart, no online payment), managed manually by the owner through a private admin area.
 
-First, run the development server:
+**Stack:** Next.js (App Router, TypeScript) · Tailwind CSS · Neon Postgres · Vercel
+
+## Pages
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Brand hero, featured designs, how-it-works, FAQ preview |
+| `/designs` | Catalogue (active products; unavailable ones shown greyed, not orderable) |
+| `/product/[slug]` | Product detail with "Request this design" |
+| `/how-it-works` | Wearing/removal steps, care & safety |
+| `/faq` | PIERCING / FIT / ORDER / PAYMENT / DELIVERY / CARE answers |
+| `/order` | Order request form (product, qty, name, phone, optional email, address, city, PIN, note, consent) |
+| `/thank-you` | Unique reference code + what happens next |
+| `/privacy` | Privacy notice |
+| `/admin` | Owner login → Orders dashboard: search, status filter, pagination |
+| `/admin/orders/[id]` | Order detail: contact + delivery + WhatsApp shortcut, status update, internal notes |
+
+## APIs
+
+| Endpoint | Notes |
+| --- | --- |
+| `GET /api/products` | Active catalogue only |
+| `GET /api/products/[slug]` | 404 if missing/inactive |
+| `POST /api/order-requests` | Full server validation, availability check, one request per submit, returns public ref (201) |
+| `POST /api/admin/login` | scrypt hash check, rate-limited, generic failure message |
+| `POST /api/admin/logout` | Clears session |
+| `GET /api/admin/orders` | Admin-only; search (+ref/name/phone), status filter, pagination |
+| `GET /api/admin/orders/[id]` | Admin-only detail incl. notes |
+| `PATCH /api/admin/orders/[id]` | Admin-only status change / internal note append |
+
+## Data model (Neon Postgres)
+
+- `products(id, name, slug, description, price_inr, image_url, category, is_active, created_at, updated_at)`
+- `order_requests(id, public_ref, customer_name, phone, email, address, city, pincode, product_id, product_name_snapshot, price_snapshot, quantity, customer_note, status, created_at, updated_at)`
+- `order_notes(id, order_request_id, note, created_at, created_by)`
+- `admins(id, email, password_hash, created_at)`
+
+**Price convention:** stored as **integer rupees** (`₹199` → `199`). Switch to paise
+only if fractional prices are ever introduced (PRD §7 documents the choice).
+
+**Privacy:** `public_ref` (e.g. `SS-K7M2QX`) is the only identifier customers see;
+sequential DB ids are never exposed. Timestamps stored UTC, displayed in IST.
+
+## Anti-spam / safety
+
+- Client + server validation ("validate twice"), honeypot field, 5 orders/min/IP,
+  8 login attempts / 10 min/IP (best-effort, per serverless instance).
+- Admin session = HMAC-signed HttpOnly cookie (`ADMIN_SESSION_SECRET`), 7-day expiry.
+
+## Local development
 
 ```bash
+npm install
+# .env.local (gitignored) needs:
+#   DATABASE_URL=postgresql://...neon.tech/neondb?sslmode=require...
+#   ADMIN_SESSION_SECRET=<random hex>
+node scripts/setup-db.mjs   # idempotent: schema + seed + admin bootstrap
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+If local DNS refuses to resolve the Neon hostname (as on this machine), also set:
+`DATABASE_HOSTADDR=<pooler IP>` and `DATABASE_SERVERNAME=<neon hostname>` —
+never set these on Vercel (the pooler IP can rotate).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Owner / admin account
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+node scripts/setup-db.mjs                                   # first run: creates admin, prints password
+ADMIN_EMAIL=you@example.com node scripts/setup-db.mjs --create   # add account with your email
+ADMIN_PASSWORD='new-pass' node scripts/setup-db.mjs              # reset password
+```
 
-## Learn More
+Default bootstrap account: `owner@stickandslay.app` (**change this email** before launch).
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment (Vercel)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Env vars needed in Vercel: `DATABASE_URL`, `ADMIN_SESSION_SECRET` (all environments).
+Deploy from the linked GitHub repo (auto-deploys on push) or `npx vercel --prod`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tests
 
-## Deploy on Vercel
+```bash
+npm run build                                    # type + build check
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\smoke-test.ps1 -BaseUrl http://localhost:3000
+node scripts/admin-smoke.mjs <BaseUrl> <adminEmail> <password>
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The page/API smoke test creates ONE clearly-marked test order (status `cancelled`,
+noted "Automated smoke test — safe to ignore").
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Before launch (owner TODOs — PRD §16)
+
+- Replace `lib/site.ts` placeholders: real contact email, Instagram URL, WhatsApp number.
+- Replace `/public/products/*.svg` placeholders with **real product photography**
+  (front + on-ear, WebP/AVIF, compressed).
+- Confirm materials/magnet specs & care copy ("published only after verifying").
+- Decide delivery regions/charges, returns/refunds/cancellation rules (FAQ copy updated then).
+- Confirm prices + availability; keep every design under ₹299 (see `lib/site.ts` `priceCapInr`).

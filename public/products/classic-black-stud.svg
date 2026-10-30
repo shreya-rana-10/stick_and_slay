@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#1c1c20"/>
+      <stop offset="100%" stop-color="#0a0a0b"/>
+    </radialGradient>
+    <radialGradient id="gloss" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#3d3d44"/>
+      <stop offset="60%" stop-color="#17171a"/>
+      <stop offset="100%" stop-color="#0f0f11"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#d9ff45" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#d9ff45" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#bg)"/>
+  <circle cx="400" cy="400" r="360" fill="url(#glow)"/>
+  <ellipse cx="400" cy="648" rx="180" ry="26" fill="#000000" opacity="0.55"/>
+  <circle cx="400" cy="450" r="150" fill="url(#gloss)"/>
+  <circle cx="400" cy="450" r="150" fill="none" stroke="#55555e" stroke-width="5"/>
+  <circle cx="400" cy="450" r="112" fill="none" stroke="#2c2c33" stroke-width="4" opacity="0.7"/>
+  <circle cx="400" cy="450" r="78" fill="#111114"/>
+  <circle cx="400" cy="450" r="70" fill="none" stroke="#d9ff45" stroke-width="3" stroke-dasharray="4 10" opacity="0.6"/>
+  <path d="M330 390 a86 86 0 0 1 70 -50" fill="none" stroke="#9d9da8" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+</svg>

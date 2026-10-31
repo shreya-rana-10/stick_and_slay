@@ -10,8 +10,9 @@ export const dynamic = "force-dynamic";
 /**
  * POST /api/order-requests
  * Validate every field server-side, check product availability, store ONE
- * request with a name/price snapshot, and return a public reference.
- * No payment data is ever accepted (PRD §8).
+ * request — primary storage is the owner's Google Sheet (Apps Script
+ * webhook), with the database as fallback if the sheet write fails.
+ * Returns a public reference. No payment data is ever accepted (PRD §8).
  */
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -66,10 +67,38 @@ export async function POST(req: NextRequest) {
   }
 
   const estimate = product.price_inr * value.quantity;
+  const reference = makePublicRef();
 
-  // Insert with a unique public reference; retry on the unlikely ref collision.
+  // PRIMARY storage: the owner's Google Sheet. Order details live there;
+  // the database is only used as a fallback when the sheet write fails.
+  const sheetWrite = await appendOrderToSheet({
+    reference,
+    customerName: value.customerName,
+    phone: value.phone,
+    email: value.email,
+    address: value.address,
+    city: value.city,
+    pincode: value.pincode,
+    productName: product.name,
+    unitPriceInr: product.price_inr,
+    quantity: value.quantity,
+    estimateInr: estimate,
+    customerNote: value.note,
+    status: "new",
+  });
+  if (sheetWrite.ok) {
+    // Only public fields are returned — never internal ids or payment data.
+    return NextResponse.json(
+      { success: true, reference, estimateInr: estimate },
+      { status: 201 },
+    );
+  }
+  console.error("google sheets write failed, falling back to database:", sheetWrite.error);
+
+  // FALLBACK storage: the database. Only reaches here when the sheet write
+  // fails, so a customer request is never lost. Retries on ref collision.
   for (let attempt = 0; attempt < 5; attempt++) {
-    const reference = makePublicRef();
+    const fallbackRef = makePublicRef();
     try {
       await q(
         `INSERT INTO order_requests
@@ -77,7 +106,7 @@ export async function POST(req: NextRequest) {
             product_id, product_name_snapshot, price_snapshot, quantity, customer_note)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
         [
-          reference,
+          fallbackRef,
           value.customerName,
           value.phone,
           value.email,
@@ -91,26 +120,8 @@ export async function POST(req: NextRequest) {
           value.note,
         ],
       );
-      // Mirror into the owner's Google Sheet (best-effort — DB is the
-      // source of truth; a sheet outage never blocks an order).
-      await appendOrderToSheet({
-        reference,
-        customerName: value.customerName,
-        phone: value.phone,
-        email: value.email,
-        address: value.address,
-        city: value.city,
-        pincode: value.pincode,
-        productName: product.name,
-        unitPriceInr: product.price_inr,
-        quantity: value.quantity,
-        estimateInr: estimate,
-        customerNote: value.note,
-        status: "new",
-      });
-      // Only public fields are returned — never internal ids or payment data.
       return NextResponse.json(
-        { success: true, reference, estimateInr: estimate },
+        { success: true, reference: fallbackRef, estimateInr: estimate },
         { status: 201 },
       );
     } catch (err) {

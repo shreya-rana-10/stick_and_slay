@@ -12,8 +12,8 @@
  *   SHEETS_WEBHOOK_URL     https://script.google.com/macros/s/.../exec
  *   SHEETS_WEBHOOK_SECRET  shared secret, checked by the script
  *
- * Behaviour: best-effort. If the webhook is unset or fails, the order is
- * still saved in the database — the sheet is a secondary, redundant copy.
+ * Behaviour: primary order storage. The route falls back to the database
+ * only when the sheet write fails, so a request is never lost.
  */
 
 export type SheetOrder = {
@@ -32,10 +32,12 @@ export type SheetOrder = {
   status: string;
 };
 
-export async function appendOrderToSheet(order: SheetOrder): Promise<void> {
+export async function appendOrderToSheet(order: SheetOrder): Promise<{ ok: boolean; error?: string }> {
   const url = process.env.SHEETS_WEBHOOK_URL?.trim();
   const secret = process.env.SHEETS_WEBHOOK_SECRET?.trim();
-  if (!url || !secret) return; // not configured -> no-op
+  if (!url || !secret) {
+    return { ok: false, error: "SHEETS_WEBHOOK_URL/SECRET not configured" };
+  }
 
   const payload = {
     secret,
@@ -65,11 +67,20 @@ export async function appendOrderToSheet(order: SheetOrder): Promise<void> {
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
-    if (!res.ok) throw new Error(`webhook responded ${res.status}`);
-    await res.text(); // drain the response before returning
+    if (!res.ok) return { ok: false, error: `webhook responded ${res.status}` };
+    const text = await res.text(); // drain the response
+    let scriptResult: { ok?: boolean; error?: string } | null = null;
+    try {
+      scriptResult = JSON.parse(text) as { ok?: boolean; error?: string };
+    } catch {
+      scriptResult = null; // non-JSON output — treat HTTP 200 as success
+    }
+    if (scriptResult && scriptResult.ok === false) {
+      return { ok: false, error: `script error: ${scriptResult.error ?? "unknown"}` };
+    }
+    return { ok: true };
   } catch (err) {
-    // Never fail the order because of the sheet mirror.
-    console.error("google sheets mirror failed", err);
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
   } finally {
     clearTimeout(timer);
   }

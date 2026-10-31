@@ -37,7 +37,7 @@ export default async function DesignsPage() {
           <h2 className="mt-10 text-xs font-semibold uppercase tracking-widest text-mist">
             Available now ({active.length})
           </h2>
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+<div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {active.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -50,7 +50,7 @@ export default async function DesignsPage() {
           <h2 className="mt-12 text-xs font-semibold uppercase tracking-widest text-mist">
             Currently unavailable ({inactive.length})
           </h2>
-          <div className="mt-4 grid grid-cols-1 gap-4 opacity-60 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-2 gap-4 opacity-60 sm:grid-cols-3 lg:grid-cols-4">
             {inactive.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

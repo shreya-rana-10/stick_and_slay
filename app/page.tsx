@@ -90,7 +90,7 @@ export default async function HomePage() {
         </div>
 
         {/* Hero product banner */}
-        <div className="relative mx-auto max-w-2xl px-4 pb-16 sm:px-6">
+        <div className="relative mx-auto max-w-lg px-4 pb-16 sm:px-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/products/diamond-stud-banner.jpg"
@@ -122,11 +122,13 @@ export default async function HomePage() {
             New designs are being uploaded right now — check back shortly.
           </p>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {featured.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+  {featured.map((p) => (
+    <div key={p.id} className="w-full max-w-[16rem] sm:w-64">
+      <ProductCard product={p} />
+    </div>
+  ))}
+</div>
         )}
       </section>
 
@@ -150,7 +152,7 @@ export default async function HomePage() {
 
       {/* For the boys */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="grid items-center gap-10 md:grid-cols-2">
+        <div className="mx-auto grid max-w-4xl items-center justify-items-center gap-10 text-center md:grid-cols-2">
           <div>
             <h2 className="font-display text-3xl uppercase sm:text-4xl">
               Built for the boys.{" "}
@@ -173,12 +175,12 @@ export default async function HomePage() {
               See how the magnet holds →
             </Link>
           </div>
-          <div className="rounded-3xl border border-line bg-panel p-4">
+          <div className="mx-auto w-full max-w-[16rem] rounded-3xl border border-line bg-panel p-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/products/diamond-stud-on-ear.jpg"
               alt="Man wearing the silver magnetic diamond stud — clean, clamped fit with no piercing"
-              className="mx-auto w-full max-w-xs rounded-2xl object-cover"
+              className="mx-auto w-full max-w-[13rem] rounded-2xl object-contain"
               loading="lazy"
             />
             <p className="px-4 py-2 text-center text-sm font-semibold uppercase tracking-widest text-mist">

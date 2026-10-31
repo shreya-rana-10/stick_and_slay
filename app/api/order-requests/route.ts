@@ -3,6 +3,7 @@ import { q } from "@/lib/db";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { validateOrder } from "@/lib/validation";
 import { makePublicRef } from "@/lib/orders";
+import { appendOrderToSheet } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
 
@@ -90,6 +91,23 @@ export async function POST(req: NextRequest) {
           value.note,
         ],
       );
+      // Mirror into the owner's Google Sheet (best-effort — DB is the
+      // source of truth; a sheet outage never blocks an order).
+      await appendOrderToSheet({
+        reference,
+        customerName: value.customerName,
+        phone: value.phone,
+        email: value.email,
+        address: value.address,
+        city: value.city,
+        pincode: value.pincode,
+        productName: product.name,
+        unitPriceInr: product.price_inr,
+        quantity: value.quantity,
+        estimateInr: estimate,
+        customerNote: value.note,
+        status: "new",
+      });
       // Only public fields are returned — never internal ids or payment data.
       return NextResponse.json(
         { success: true, reference, estimateInr: estimate },

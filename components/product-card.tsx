@@ -15,7 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
         aria-label={`View details of ${name}`}
         className="block overflow-hidden"
       >
-        <div className="aspect-square overflow-hidden">
+        <div className="h-44 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={image_url}

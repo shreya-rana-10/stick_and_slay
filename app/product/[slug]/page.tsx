@@ -23,7 +23,7 @@ export async function generateMetadata(props: PageProps<"/product/[slug]">) {
 export default async function ProductPage(props: PageProps<"/product/[slug]">) {
   const { slug } = await props.params;
   const rows = await q<Product>(
-    `SELECT id, name, slug, description, price_inr, image_url, category, is_active, created_at, updated_at
+    `SELECT id, name, slug, description, price_inr, image_url, category, is_active, gallery_urls, created_at, updated_at
      FROM products
      WHERE slug = $1`,
     [slug],
@@ -41,13 +41,33 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
       </Link>
 
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-3xl border border-line bg-panel">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={product.image_url}
-            alt={`${product.name} — magnetic ${product.category} earring`}
-            className="aspect-square h-full w-full object-cover"
-          />
+        <div>
+          <div className="overflow-hidden rounded-3xl border border-line bg-panel">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={product.image_url}
+              alt={`${product.name} — magnetic ${product.category} earring`}
+              className="aspect-square h-full w-full object-cover"
+            />
+          </div>
+          {(product.gallery_urls?.length ?? 0) > 0 && (
+            <div className="mt-3 grid grid-cols-4 gap-3">
+              {product.gallery_urls!.map((src) => (
+                <div
+                  key={src}
+                  className="overflow-hidden rounded-2xl border border-line bg-panel"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt={`${product.name} — additional view`}
+                    className="aspect-square h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>

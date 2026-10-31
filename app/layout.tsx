@@ -16,6 +16,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://stick-and-slay.vercel.app"),
   title: {
     default: "Stick & Slay — Magnetic Earrings",
     template: "%s · Stick & Slay",
@@ -27,6 +28,14 @@ export const metadata: Metadata = {
     description:
       "The ear-piercing look. No piercing needed. Unisex magnetic earrings under ₹299.",
     type: "website",
+    images: [
+      {
+        url: "/products/diamond-stud-banner.jpg",
+        width: 1280,
+        height: 1198,
+        alt: "Stick & Slay magnetic studs",
+      },
+    ],
   },
 };
 

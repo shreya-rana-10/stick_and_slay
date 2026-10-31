@@ -12,8 +12,16 @@ const mainLinks = [
 
 export function BrandMark({ className = "" }: { className?: string }) {
   return (
-    <span className={`font-display uppercase tracking-wide ${className}`}>
-      Stick<span className="text-slay">&</span>Slay
+    <span className={`flex items-center gap-2.5 ${className}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/logo.jpg"
+        alt=""
+        className="h-9 w-9 shrink-0 rounded-full object-cover"
+      />
+      <span className="font-display uppercase tracking-wide">
+        Stick<span className="text-slay">&</span>Slay
+      </span>
     </span>
   );
 }

@@ -43,6 +43,16 @@ export default function HowItWorksPage() {
         them — so you get the complete earring look with zero piercings.
       </p>
 
+      <div className="mt-8 overflow-hidden rounded-3xl border border-line bg-panel">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/products/diamond-stud-infographic.jpg"
+          alt="Diagram of how it works: two magnets — one with a diamond design and one plain — attract each other through the earlobe"
+          className="w-full"
+          loading="lazy"
+        />
+      </div>
+
       <section className="mt-12">
         <h2 className="font-display text-2xl uppercase">Wearing it</h2>
         <ol className="mt-6 space-y-4">

@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS products (
   description TEXT NOT NULL DEFAULT '',
   price_inr INTEGER NOT NULL CHECK (price_inr >= 0),
   image_url TEXT NOT NULL DEFAULT '',
+  gallery_urls JSONB NOT NULL DEFAULT '[]'::jsonb,
   category TEXT NOT NULL DEFAULT 'studs',
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -135,26 +136,37 @@ CREATE TRIGGER trg_products_updated_at
 DROP TRIGGER IF EXISTS trg_orders_updated_at ON order_requests;
 CREATE TRIGGER trg_orders_updated_at
   BEFORE UPDATE ON order_requests FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- Upgrade pre-existing databases that lack the gallery column.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery_urls JSONB NOT NULL DEFAULT '[]'::jsonb;
 `;
 
+// Real product line (owner-supplied photography). Designs marked is_active:
+// false are kept only as "currently unavailable" placeholders for fresh DBs.
 const PRODUCTS = [
   {
-    name: "Classic Black Stud",
-    slug: "classic-black-stud",
+    name: "Diamond Magnetic Stud",
+    slug: "diamond-magnetic-stud",
     category: "studs",
     price_inr: 199,
-    image_url: "/products/classic-black-stud.svg",
+    image_url: "/products/diamond-magnetic-stud.jpg",
+    gallery_urls: [
+      "/products/diamond-stud-on-ear.jpg",
+      "/products/diamond-stud-giftbox.jpg",
+      "/products/diamond-stud-4views.jpg",
+      "/products/diamond-stud-explainer.jpg",
+    ],
     description:
-      "Matte black stud with a magnetic back — the everyday starter piece. Understated, clean, goes with everything.",
+      "Silver-tone magnetic stud with a sparkling diamond-cut face. The front and a plain magnetic back clamp the lobe from both sides — the full stud look with zero piercings.",
   },
   {
-    name: "Chrome Stud",
-    slug: "chrome-stud",
+    name: "Amber Square Magnetic Stud",
+    slug: "amber-square-magnetic-stud",
     category: "studs",
     price_inr: 249,
-    image_url: "/products/chrome-stud.svg",
+    image_url: "/products/amber-square-magnetic-stud.jpg",
     description:
-      "High-shine chrome ball stud that catches light with every turn. The clean fit for college days and late nights.",
+      "Square amber gem in a gold-tone bezel backed by a dark magnetic plate. A warm pop of colour for your no-piercing look — snaps on, holds firm, slides off clean.",
   },
   {
     name: "Ice Cube Stud",
@@ -162,6 +174,7 @@ const PRODUCTS = [
     category: "studs",
     price_inr: 199,
     image_url: "/products/ice-cube-stud.svg",
+    is_active: false,
     description:
       "A squared-off gem-cut stud that plays with light like crushed ice. Sharp geometry, zero commitment.",
   },
@@ -171,6 +184,7 @@ const PRODUCTS = [
     category: "hoops",
     price_inr: 249,
     image_url: "/products/midnight-hoop.svg",
+    is_active: false,
     description:
       "Blackened hoop with a smooth edge and a magnetic hold — the full loop look, no pierced ear required.",
   },
@@ -180,6 +194,7 @@ const PRODUCTS = [
     category: "hoops",
     price_inr: 299,
     image_url: "/products/gold-rush-hoop.svg",
+    is_active: false,
     description:
       "Gold-finish statement hoop. Thick profile, warm shine — the one you wear when you want to be the fit.",
   },
@@ -189,6 +204,7 @@ const PRODUCTS = [
     category: "minimal",
     price_inr: 149,
     image_url: "/products/minimal-bar.svg",
+    is_active: false,
     description:
       "Straight brushed-steel bar stud. The quiet flex — small, sharp, and impossible to argue with.",
   },
@@ -202,10 +218,19 @@ try {
 
   for (const p of PRODUCTS) {
     await pool.query(
-      `INSERT INTO products (name, slug, description, price_inr, image_url, category)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO products (name, slug, description, price_inr, image_url, category, gallery_urls, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8)
        ON CONFLICT (slug) DO NOTHING`,
-      [p.name, p.slug, p.description, p.price_inr, p.image_url, p.category],
+      [
+        p.name,
+        p.slug,
+        p.description,
+        p.price_inr,
+        p.image_url,
+        p.category,
+        JSON.stringify(p.gallery_urls ?? []),
+        p.is_active ?? true,
+      ],
     );
   }
   const count = await pool.query(`SELECT count(*)::int AS c FROM products`);

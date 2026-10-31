@@ -10,7 +10,7 @@ const steps = [
   {
     n: "01",
     title: "Pick your style",
-    body: "Browse the designs — studs, hoops, minimal pieces. Every one is magnetic and priced under ₹299.",
+    body: "Browse the designs — silver diamond and amber gem styles. Every one is magnetic and priced under ₹299.",
   },
   {
     n: "02",
@@ -88,6 +88,16 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
+
+        {/* Hero product banner */}
+        <div className="relative mx-auto max-w-2xl px-4 pb-16 sm:px-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/products/diamond-stud-banner.jpg"
+            alt="Magnetic studs — simple, stylish, everyday. Product collage showing the ear fit and the strong magnetic hold"
+            className="w-full rounded-3xl border border-line"
+          />
+        </div>
       </section>
 
       {/* Featured designs */}
@@ -112,7 +122,7 @@ export default async function HomePage() {
             New designs are being uploaded right now — check back shortly.
           </p>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {featured.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -148,9 +158,9 @@ export default async function HomePage() {
             </h2>
             <p className="mt-4 leading-relaxed text-mist">
               No pierced ear? No problem. Stick &amp; Slay is for guys who want
-              the earring look without a needle anywhere near them. Pick stud,
-              hoop or bar — it holds by magnet, comes off clean, and nobody in
-              the room can tell the difference.
+              the earring look without a needle anywhere near them. Pick a
+              silver diamond stud or an amber gem — it holds by magnet, comes
+              off clean, and nobody in the room can tell the difference.
             </p>
             <p className="mt-3 text-sm text-mist">
               Girls, friends, family — the styles are unisex too. Wear what fits
@@ -163,16 +173,16 @@ export default async function HomePage() {
               See how the magnet holds →
             </Link>
           </div>
-          <div className="rounded-3xl border border-line bg-panel p-8">
+          <div className="rounded-3xl border border-line bg-panel p-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/products/chrome-stud.svg"
-              alt="Chrome magnetic stud earring on a dark studio background"
-              className="mx-auto w-full max-w-xs rounded-2xl"
+              src="/products/diamond-stud-on-ear.jpg"
+              alt="Man wearing the silver magnetic diamond stud — clean, clamped fit with no piercing"
+              className="mx-auto w-full max-w-xs rounded-2xl object-cover"
               loading="lazy"
             />
-            <p className="mt-4 text-center text-xs uppercase tracking-widest text-mist">
-              The Chrome Stud — clean fit, zero holes
+            <p className="px-4 py-2 text-center text-sm font-semibold uppercase tracking-widest text-mist">
+              For every occasion — one stud, no holes
             </p>
           </div>
         </div>
@@ -219,7 +229,7 @@ export default async function HomePage() {
           href="/order"
           className="mt-8 inline-block rounded-full bg-slay px-8 py-4 font-display text-lg uppercase tracking-wide text-ink transition hover:bg-white"
         >
-          Order now — ₹149 to ₹{site.priceCapInr}
+          Order now — from ₹199
         </Link>
       </section>
     </>

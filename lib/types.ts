@@ -9,6 +9,8 @@ export type Product = {
   image_url: string;
   category: string;
   is_active: boolean;
+  /** Optional product gallery (JSONB array of image paths). */
+  gallery_urls?: string[];
 };
 
 /** Row shape returned by the admin orders list endpoint. */
